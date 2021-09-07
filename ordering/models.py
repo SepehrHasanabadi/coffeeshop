@@ -26,13 +26,21 @@ class Order(models.Model):
 
 
 class GenericMenuItem(models.Model):
-    object_id = models.PositiveIntegerField(null=True, blank=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    """
+    Only menu items must be defined in this model
+    """
+    object_id = models.PositiveIntegerField(null=False, blank=False)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False, blank=False)
     content_object = GenericForeignKey('content_type', 'object_id')
 
 
 class MenuItem(models.Model):
     cost = models.PositiveIntegerField('قیمت')
+
+    def save(self, *args, **kwargs):
+        super(MenuItem, self).save(*args, **kwargs)
+        generic_menu_item = GenericMenuItem(content_object=self)
+        generic_menu_item.save()
 
     class Meta:
         abstract = True
