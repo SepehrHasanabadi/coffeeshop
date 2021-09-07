@@ -8,11 +8,13 @@ class Order(models.Model):
     PREPARATION = 'preparation'
     READY = 'ready'
     DELIVERED = 'delivered'
+    CANCELED = 'canceled'
     ORDER_STATUS = [
         (WAITING, 'در انتظار'),
         (PREPARATION, 'آماده سازی'),
         (READY, 'آماده شده'),
         (DELIVERED, 'تحویل داده شده'),
+        (CANCELED, 'کنسل شده'),
     ]
     TAKE_AWAY = 'take_away'
     IN_SHOP = 'in_shop'
@@ -20,6 +22,7 @@ class Order(models.Model):
         (TAKE_AWAY, 'بیرون بر'),
         (IN_SHOP, 'در محدوده'),
     ]
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=False)
     status = models.CharField('وضعیت', max_length=20, choices=ORDER_STATUS, default=WAITING)
     consume_location = models.CharField('محل سرو', max_length=20, choices=CONSUME_LOCATION, default=IN_SHOP)
     menu_item = models.ForeignKey('GenericMenuItem', on_delete=models.CASCADE, null=False)
@@ -35,7 +38,7 @@ class GenericMenuItem(models.Model):
 
 
 class MenuItem(models.Model):
-    cost = models.PositiveIntegerField('قیمت')
+    price = models.PositiveIntegerField('قیمت')
 
     def save(self, *args, **kwargs):
         super(MenuItem, self).save(*args, **kwargs)
