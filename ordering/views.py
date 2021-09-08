@@ -1,6 +1,7 @@
 import itertools
 
 from rest_framework import generics, mixins
+from rest_framework.exceptions import MethodNotAllowed, PermissionDenied
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -43,7 +44,7 @@ class OrderStatusUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [IsAdminUser, ]
 
     def put(self, request, *args, **kwargs):
-        pass
+        raise MethodNotAllowed(method='put')
 
 
 class OrderCancelUpdateAPIView(generics.UpdateAPIView):
@@ -51,5 +52,11 @@ class OrderCancelUpdateAPIView(generics.UpdateAPIView):
     queryset = Order.objects.all()
     permission_classes = [IsAuthenticated, ]
 
+    def get_object(self):
+        obj = super(OrderCancelUpdateAPIView, self).get_object()
+        if not self.request.user.is_staff and obj.user != self.request.user:
+            raise PermissionDenied()
+        return obj
+
     def put(self, request, *args, **kwargs):
-        pass
+        raise MethodNotAllowed(method='put')

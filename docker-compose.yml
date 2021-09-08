@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.6.6
+    ports:
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=mypass
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+  celery:
+    build: .
+    command: celery -A conf worker -l info
+    environment:
+      - BROKER_URL=amqp://admin:mypass@rabbitmq:5672//
+      - RESULT_BACKEND=redis://redis:6379/0
+      - C_FORCE_ROOT=true
+    volumes:
+      - celery:/code
+    depends_on:
+      - rabbitmq
+      - redis
+
+volumes:
+  celery:

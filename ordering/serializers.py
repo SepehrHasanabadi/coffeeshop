@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from ordering.models import Order
 
+from ordering.tasks import send_modified_status_mail, send_cancel_order_mail
+
 
 class MenuItemSerializer(serializers.Serializer):
 
@@ -52,6 +54,11 @@ class OrderStatusSerializer(serializers.ModelSerializer):
         model = Order
         fields = ('status',)
 
+    def create(self, validated_data):
+        instance = super(OrderStatusSerializer, self).create(validated_data)
+        send_modified_status_mail([instance.user.email])
+        return instance
+
 
 class OrderCancelSerializer(serializers.ModelSerializer):
     status = serializers.CharField(read_only=True)
@@ -63,4 +70,5 @@ class OrderCancelSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data['status'] = Order.CANCELED
         instance = super(OrderCancelSerializer, self).update(instance, validated_data)
+        send_cancel_order_mail([instance.user.email])
         return instance
