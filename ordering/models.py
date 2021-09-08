@@ -31,6 +31,7 @@ class Order(models.Model):
 class GenericMenuItem(models.Model):
     """
     Only menu items must be defined in this model
+    All the menu items can be retrived from this model
     """
     object_id = models.PositiveIntegerField(null=False, blank=False)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False, blank=False)
@@ -41,6 +42,12 @@ class MenuItem(models.Model):
     price = models.PositiveIntegerField('قیمت')
 
     def save(self, *args, **kwargs):
+        """
+        insert a conresponding instance to the GenericMenuItem after a menu item is created
+        :param args:
+        :param kwargs:
+        :return: void
+        """
         super(MenuItem, self).save(*args, **kwargs)
         generic_menu_item = GenericMenuItem(content_object=self)
         generic_menu_item.save()

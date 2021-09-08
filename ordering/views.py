@@ -13,6 +13,15 @@ from ordering.serializers import MenuSerializer, OrderSerializer, OrderStatusSer
 class MenuListAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
+        """
+        list of menus in a tree struction will be returned.
+        The root of the tree is a menu item name and the leaves
+        are options with their prices, and types
+        :param request:
+        :param args:
+        :param kwargs:
+        :return: list of MenuItems
+        """
         menu_items = list(self.get_queryset())
         result_dict = [(k, list(grp)) for k, grp in itertools.groupby(menu_items, key=lambda x: x.content_type)]
         serializer = MenuSerializer(result_dict, many=True)
@@ -53,6 +62,10 @@ class OrderCancelUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, ]
 
     def get_object(self):
+        """
+        Only staff users are allowed to cancel orders
+        :return: order instance in case of having permission rights
+        """
         obj = super(OrderCancelUpdateAPIView, self).get_object()
         if not self.request.user.is_staff and obj.user != self.request.user:
             raise PermissionDenied()
